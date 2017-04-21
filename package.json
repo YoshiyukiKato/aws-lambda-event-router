@@ -1,0 +1,33 @@
+{
+  "name": "lambda-event-router",
+  "version": "0.0.1",
+  "description": "routing lambda execution by event",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "$(npm bin)/mocha test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YoshiyukiKato/lambda-event-router.git"
+  },
+  "keywords": [
+    "lambda",
+    "router"
+  ],
+  "author": "Yoshiyuki Kato",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/YoshiyukiKato/lambda-event-router/issues"
+  },
+  "homepage": "https://github.com/YoshiyukiKato/lambda-event-router#readme",
+  "dependencies": {
+    "bluebird": "^3.5.0"
+  },
+  "devDependencies": {
+    "mocha": "^3.2.0",
+    "power-assert": "^1.4.2"
+  }
+}
