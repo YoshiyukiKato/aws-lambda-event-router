@@ -58,10 +58,11 @@ function Response(context){
 
 Response.prototype.status = function(statusCode){
   this.statusCode = statusCode;
+  return this;
 }
 
 Response.prototype.send = function(message){
-  if(statusCode === 200){
+  if(this.statusCode === 200){
     this.context.succeed(message);
   }else{
     this.context.fail(message);
@@ -86,7 +87,7 @@ function path2ReqFilter(path){
   pattern += "$";
   
   const reqFilter = function(pattern, paramList, reqPath){
-    const matched = reqPath.match(regexp);
+    const matched = reqPath.match(new RegExp(pattern));
     if(!matched) return;
     const params = {};
     let paramName, i;
