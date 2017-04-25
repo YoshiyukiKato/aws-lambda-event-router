@@ -8,13 +8,20 @@ function Router(){
 
 Router.prototype.on = function(path, cb){
   this.routes.push({
-    genReq : getReqGenerator(path),
+    filter : path2ReqFilter(path),
     cb : cb
   });
 }
 
+/**
+ * @param {object} event
+ * @param {string} event.path  pseudo 
+ * @param {object} context 
+ */
 Router.prototype.resolve = function(event, context){
-  let route, req, res;
+  let route;
+  let req, res = new Response(context);
+
   if(this.cache[event.path]){
     route = this.cache[event.path].route;
     req = this.cache[event.path].req;
@@ -22,7 +29,7 @@ Router.prototype.resolve = function(event, context){
     let i;
     for(i = 0; i<this.routes.length; i++){
       route = this.routes[i];
-      req = route.genReq(event.path);
+      req = route.filter(event.path);
       if(!!req){
         this.cache[event.path] = {
           route : route,
@@ -33,20 +40,35 @@ Router.prototype.resolve = function(event, context){
     }
   }  
   
-  //TODO: ここでのエラーを回収きるようにする
-  if(!req){
-    return;    
+  if(!!req){
+    req.event = event;
+    route.cb(req, res);
+  }else{
+    res.status(404).send("not found");  
   }
-
-  req.event = event;
-  res = {
-    send : context.succeed,
-    error : context.fail
-  }
-  route.cb(req, res);
 }
 
-function getReqGenerator(path){
+/**
+ * @param {object} context  aws lambda context
+ */
+function Response(context){
+  this.context = context;
+  this.statusCode = 200;
+}
+
+Response.prototype.status = function(statusCode){
+  this.statusCode = statusCode;
+}
+
+Response.prototype.send = function(message){
+  if(statusCode === 200){
+    this.context.succeed(message);
+  }else{
+    this.context.fail(message);
+  }
+}
+
+function path2ReqFilter(path){
   const parts = path.split("/").filter(p => p !== "");
   const paramList = [];
   let pattern = "^";
@@ -62,23 +84,20 @@ function getReqGenerator(path){
     }
   }
   pattern += "$";
-
-  const reqGenerator = function(pattern, paramList, reqPath){
-    const regexp = new RegExp(pattern);
-    const match = reqPath.match(regexp);
-    if(!match)return;
-    
+  
+  const reqFilter = function(pattern, paramList, reqPath){
+    const matched = reqPath.match(regexp);
+    if(!matched) return;
     const params = {};
     let paramName, i;
     for(i = 0; i < paramList.length; i++){
       paramName = paramList[i];
-      params[paramName] = match[i+1];
+      params[paramName] = matched[i+1];
     }
     return { params : params };
-  }.bind(null, pattern, paramList)
-  
-  return reqGenerator;
-}
+  }.bind(null, pattern, paramList);
 
+  return reqFilter;
+}
 
 module.exports = Router
