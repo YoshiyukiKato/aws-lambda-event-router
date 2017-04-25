@@ -29,7 +29,7 @@ describe("router", () => {
     router.resolve(event, context);
   });
 
-  it("does not respond", () => {
+  it("is not found", () => {
     const router = new Router();
     const event = {
       path : "/hello"
@@ -45,7 +45,7 @@ describe("router", () => {
     };
 
     router.on("/world", (req, res) => {
-      res.send("unexpected");
+      res.send("unexpecte");
     });
     
     router.resolve(event, context);
