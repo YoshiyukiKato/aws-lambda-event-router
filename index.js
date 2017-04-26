@@ -1,5 +1,3 @@
-const Promise = require("bluebird");
-
 //Router class
 function Router(){
   this.cache = {};
@@ -14,8 +12,30 @@ Router.prototype.on = function(path, cb){
 }
 
 /**
+ * @param {object} context  aws lambda context
+ */
+function Response(context){
+  this.context = context;
+  this.statusCode = 200;
+}
+
+Response.prototype.status = function(statusCode){
+  this.statusCode = statusCode;
+  return this;
+}
+
+Response.prototype.send = function(message){
+  if(this.statusCode === 200){
+    this.context.succeed(message);
+  }else{
+    this.context.fail(message);
+  }
+}
+
+
+/**
  * @param {object} event
- * @param {string} event.path  pseudo 
+ * @param {string} event.path url-like command
  * @param {object} context 
  */
 Router.prototype.resolve = function(event, context){
@@ -45,27 +65,6 @@ Router.prototype.resolve = function(event, context){
     route.cb(req, res);
   }else{
     res.status(404).send("not found");  
-  }
-}
-
-/**
- * @param {object} context  aws lambda context
- */
-function Response(context){
-  this.context = context;
-  this.statusCode = 200;
-}
-
-Response.prototype.status = function(statusCode){
-  this.statusCode = statusCode;
-  return this;
-}
-
-Response.prototype.send = function(message){
-  if(this.statusCode === 200){
-    this.context.succeed(message);
-  }else{
-    this.context.fail(message);
   }
 }
 
@@ -101,4 +100,4 @@ function path2ReqFilter(path){
   return reqFilter;
 }
 
-module.exports = Router
+module.exports = Router;

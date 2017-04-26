@@ -1,7 +1,6 @@
 const assert = require("power-assert");
 const Router = require("../index");
 
-
 describe("router", () => {
   it("creates new router", () => {
     const router = new Router();
