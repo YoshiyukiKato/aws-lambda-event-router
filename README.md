@@ -14,3 +14,15 @@ router.on("/books/:id", (req, res) => {
 
 exports.handler = router;
  ```
+
+
+## usage
+The `router` requires `path` parameter in an event object. `path` should be url-formed string.
+
+```
+{
+  path : "/"
+}
+```
+
+Thus, you have to configure a trigger that kicks lambda execution (such as API Gateway) as passing the `path` parameter in an event object.
