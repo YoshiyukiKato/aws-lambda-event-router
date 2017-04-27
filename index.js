@@ -1,44 +1,24 @@
 //Router class
-function Router(){
-  this.cache = {};
+
+function createRouter(){
+  const rs = new RouterState();
+  const r = router.bind(rs);
+  r.on = on.bind(rs);
+  return r;
+}
+
+function RouterState(){
   this.routes = [];
+  this.cache = {};
 }
-
-Router.prototype.on = function(path, cb){
-  this.routes.push({
-    filter : path2ReqFilter(path),
-    cb : cb
-  });
-}
-
-/**
- * @param {object} context  aws lambda context
- */
-function Response(context){
-  this.context = context;
-  this.statusCode = 200;
-}
-
-Response.prototype.status = function(statusCode){
-  this.statusCode = statusCode;
-  return this;
-}
-
-Response.prototype.send = function(message){
-  if(this.statusCode === 200){
-    this.context.succeed(message);
-  }else{
-    this.context.fail(message);
-  }
-}
-
 
 /**
  * @param {object} event
  * @param {string} event.path url-like command
  * @param {object} context 
  */
-Router.prototype.resolve = function(event, context){
+
+function router(event, context){
   let route;
   let req, res = new Response(context);
 
@@ -66,6 +46,13 @@ Router.prototype.resolve = function(event, context){
   }else{
     res.status(404).send("not found");  
   }
+}
+
+function on(path, cb){
+  this.routes.push({
+    filter : path2ReqFilter(path),
+    cb : cb
+  });
 }
 
 function path2ReqFilter(path){
@@ -100,4 +87,25 @@ function path2ReqFilter(path){
   return reqFilter;
 }
 
-module.exports = Router;
+/**
+ * @param {object} context  aws lambda context
+ */
+function Response(context){
+  this.context = context;
+  this.statusCode = 200;
+}
+
+Response.prototype.status = function(statusCode){
+  this.statusCode = statusCode;
+  return this;
+}
+
+Response.prototype.send = function(message){
+  if(this.statusCode === 200){
+    this.context.succeed(message);
+  }else{
+    this.context.fail(message);
+  }
+}
+
+exports.createRouter = createRouter;

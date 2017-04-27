@@ -1,14 +1,16 @@
 const assert = require("power-assert");
 const Router = require("../index");
 
+
 describe("router", () => {
   it("creates new router", () => {
-    const router = new Router();
+    const router = Router.createRouter();
+
     assert(router);
   });
 
   it("responds `hello`", () => {
-    const router = new Router();
+    const router = Router.createRouter();
     const event = {
       path : "/hello"
     };
@@ -25,11 +27,11 @@ describe("router", () => {
     router.on("/hello", (req, res) => {
       res.send("hello");
     });
-    router.resolve(event, context);
+    router(event, context);
   });
 
   it("is not found", () => {
-    const router = new Router();
+    const router = Router.createRouter();
     const event = {
       path : "/hello"
     };
@@ -47,6 +49,6 @@ describe("router", () => {
       res.send("unexpecte");
     });
     
-    router.resolve(event, context);
+    router(event, context);
   });
 });
