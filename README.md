@@ -17,7 +17,7 @@ exports.handler = router;
 
 
 ## usage
-Defining a router inside lambda execution.
+Defining a router in lambda execution.
 
  ```js
 router.on("/", (req, res) => {
@@ -36,7 +36,7 @@ The `router` requires `path` parameter in an event object. `path` should be url-
 Then a response will be `welcome`.
 
 ### params
-`/:param_name` style parameter is supported. You can access a parameter by `req.params[param_name]`. For instance:
+`/path/:param_name` style parameter is supported. You can access a parameter by `req.params[param_name]`. For instance:
 
 ```js
 router.on("/books/:id", (req, res) => {
@@ -50,7 +50,7 @@ router.on("/books/:id", (req, res) => {
 }
 ```
 
-In this case, the response is `you selected book 1`.
+In this case, the response is `this is book 1`.
 
 ### req/res
 `req` includes `event`, `context` and `params`. `event` and `context` are basic arguments of lambda execution. `params` is the set of paramters.
