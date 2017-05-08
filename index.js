@@ -19,33 +19,35 @@ function RouterState(){
  */
 
 function router(event, context){
-  let route;
-  let req, res = new Response(context);
-
-  if(this.cache[event.path]){
-    route = this.cache[event.path].route;
-    req = this.cache[event.path].req;
-  }else{
-    let i;
-    for(i = 0; i<this.routes.length; i++){
-      route = this.routes[i];
-      req = route.filter(event.path);
-      if(!!req){
-        this.cache[event.path] = {
-          route : route,
-          req : req
+  try{
+    let route;
+    let params;
+    
+    if(this.cache[event.path]){
+      route = this.cache[event.path].route;
+      params = this.cache[event.path].params;
+    }else{
+      let i;
+      for(i = 0; i<this.routes.length; i++){
+        route = this.routes[i];
+        params = route.filter(event.path);
+        if(!!params){
+          this.cache[event.path] = {
+            route : route,
+            params : params
+          };
+          break;
         };
-        break;
-      };
+      }
+    }  
+
+    if(!!params){
+      route.cb(event, context, params);
+    }else{
+      throw { statusCode : 404, message : "Not Found"};
     }
-  }  
-  
-  if(!!req){
-    req.event = event;
-    req.context = context;
-    route.cb(req, res);
-  }else{
-    res.status(404).send("not found");  
+  }catch(err){
+    context.fail(err);
   }
 }
 
@@ -82,31 +84,10 @@ function path2ReqFilter(path){
       paramName = paramList[i];
       params[paramName] = matched[i+1];
     }
-    return { params : params };
+    return params;
   }.bind(null, pattern, paramList);
 
   return reqFilter;
-}
-
-/**
- * @param {object} context  aws lambda context
- */
-function Response(context){
-  this.context = context;
-  this.statusCode = 200;
-}
-
-Response.prototype.status = function(statusCode){
-  this.statusCode = statusCode;
-  return this;
-}
-
-Response.prototype.send = function(message){
-  if(this.statusCode === 200){
-    this.context.succeed(message);
-  }else{
-    this.context.fail(message);
-  }
 }
 
 exports.createRouter = createRouter;

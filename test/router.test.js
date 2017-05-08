@@ -20,13 +20,14 @@ describe("router", () => {
       },
       
       fail : function(err){
-        assert(err);
+        assert(false, err.message);
       }
     };
 
-    router.on("/hello", (req, res) => {
-      res.send("hello");
+    router.on("/hello", (event, context, params) => {
+      context.succeed("hello");
     });
+    
     router(event, context);
   });
 
@@ -37,16 +38,39 @@ describe("router", () => {
     };
     const context = {
       succeed : function(message){
-        assert(new Error(message));
+        throw new Error(message);
       },
       
       fail : function(err){
-        assert(err);
+        return;
       }
     };
 
-    router.on("/world", (req, res) => {
-      res.send("unexpecte");
+    router.on("/world", (event, context, params) => {
+      context.fail("unexpected");
+    });
+    
+    router(event, context);
+  });
+
+  it("uses path parameters", () => {
+    const router = Router.createRouter();
+    const event = {
+      path : "/hello/taro"
+    };
+    
+    const context = {
+      succeed : function(message){
+        assert(message === "hello taro");
+      },
+      
+      fail : function(err){
+        throw err;
+      }
+    };
+
+    router.on("/hello/:name", (event, context, params) => {
+      context.succeed(`hello ${params.name}`);
     });
     
     router(event, context);
