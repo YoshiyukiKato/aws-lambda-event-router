@@ -4,12 +4,12 @@ URL-like inside routing for AWS lambda.
  ```js
 const router = require("aws-lambda-event-router").createRouter();
 
-router.on("/", (req, res) => {
-  res.send("welcome");
+router.on("/", (event, context, params) => {
+  context.succeed("welcome");
 });
 
-router.on("/books/:id", (req, res) => {
-  res.send("this is book " + req.params.id);
+router.on("/books/:id", (event, context, params) => {
+  context.succeed("this is book " + params.id);
 });
 
 exports.handler = router;
@@ -20,8 +20,8 @@ exports.handler = router;
 Defining a router in lambda execution.
 
  ```js
-router.on("/", (req, res) => {
-  res.send("welcome");
+router.on("/", (event, context, params) => {
+  context.succeed("welcome");
 });
 ```
 
@@ -39,8 +39,8 @@ Then a response will be `welcome`.
 `/path/:param_name` style parameter is supported. You can access a parameter by `req.params[param_name]`. For instance:
 
 ```js
-router.on("/books/:id", (req, res) => {
-  res.send("this is book " + req.params.id);
+router.on("/books/:id", (event, context, params) => {
+  context.succeed("this is book " + params.id);
 });
 ```
 
@@ -51,6 +51,3 @@ router.on("/books/:id", (req, res) => {
 ```
 
 In this case, the response is `this is book 1`.
-
-### req/res
-`req` includes `event`, `context` and `params`. `event` and `context` are basic arguments of lambda execution. `params` is the set of paramters.
