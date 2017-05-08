@@ -1,7 +1,7 @@
 {
-  "name": "lambda-event-router",
+  "name": "aws-lambda-event-router",
   "version": "0.0.1",
-  "description": "routing lambda execution by event",
+  "description": "routing inside lambda execution by event",
   "main": "index.js",
   "directories": {
     "test": "test"

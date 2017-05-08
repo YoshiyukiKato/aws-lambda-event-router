@@ -42,6 +42,7 @@ function router(event, context){
   
   if(!!req){
     req.event = event;
+    req.context = context;
     route.cb(req, res);
   }else{
     res.status(404).send("not found");  
