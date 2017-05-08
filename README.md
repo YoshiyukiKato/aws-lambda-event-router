@@ -25,13 +25,15 @@ router.on("/", (req, res) => {
 });
 ```
 
-The `router` requires `path` parameter in an event object. `path` should be url-formed string.
+The `router` requires `path` parameter in an event object. `path` should be url-formed string. A minimum event object is:
 
 ```
 {
   "path" : "/"
 }
 ```
+
+Then a response will be `welcome`.
 
 ### params
 `/:param_name` style parameter is supported. You can access a parameter by `req.params[param_name]`. For instance:
