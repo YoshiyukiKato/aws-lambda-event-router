@@ -1,15 +1,23 @@
-//Router class
+//TODO: implement router.use method
 
 function createRouter(){
   const rs = new RouterState();
   const r = router.bind(rs);
-  r.on = on.bind(rs);
+  r.get = on.bind(rs, "GET");
+  r.post = on.bind(rs, "POST");
   return r;
 }
 
 function RouterState(){
-  this.routes = [];
-  this.cache = {};
+  this.routes = {
+    GET : [],
+    POST : []
+  };
+
+  this.cache = {
+    GET : {},
+    POST : {}
+  };
 }
 
 /**
@@ -22,25 +30,29 @@ function router(event, context){
   try{
     let route;
     let params;
-    
-    if(this.cache[event.path]){
-      route = this.cache[event.path].route;
-      params = this.cache[event.path].params;
-    }else{
-      let i;
-      for(i = 0; i<this.routes.length; i++){
-        route = this.routes[i];
-        params = route.filter(event.path);
-        if(!!params){
-          this.cache[event.path] = {
-            route : route,
-            params : params
-          };
-          break;
-        };
-      }
-    }  
 
+    if(this.routes[event.httpMethod]){
+      if(this.cache[event.httpMethod][event.path]){
+        route = this.cache[event.httpMethod][event.path].route;
+        params = this.cache[event.httpMethod][event.path].params;
+      }else{
+        let i;
+        for(i = 0; i < this.routes[event.httpMethod].length; i++){
+          route = this.routes[event.httpMethod][i];
+          params = route.filter(event.path);
+          if(!!params){
+            this.cache[event.httpMethod][event.path] = {
+              route : route,
+              params : params
+            };
+            break;
+          };
+        }
+      }
+    }else{
+      throw { statusCode : 405, message : "method not allowed" };
+    }
+    
     if(!!params){
       route.cb(event, context, params);
     }else{
@@ -51,11 +63,11 @@ function router(event, context){
   }
 }
 
-function on(path, cb){
-  this.routes.push({
+function on(method, path, cb){
+  this.routes[method].push({
     filter : path2ReqFilter(path),
     cb : cb
-  });
+  });  
 }
 
 function path2ReqFilter(path){
