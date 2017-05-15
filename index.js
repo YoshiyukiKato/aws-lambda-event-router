@@ -5,13 +5,15 @@ function createRouter(){
   const r = router.bind(rs);
   r.get = on.bind(rs, "GET");
   r.post = on.bind(rs, "POST");
+  r.use = use.bind(rs);
+  r.routes = rs.routes;
   return r;
 }
 
 function RouterState(){
   this.routes = {
-    GET : [],
-    POST : []
+    GET : {},
+    POST : {}
   };
 
   this.cache = {
@@ -28,78 +30,79 @@ function RouterState(){
 
 function router(event, context){
   try{
-    let route;
-    let params;
-
+    let resolved;
     if(this.routes[event.httpMethod]){
       if(this.cache[event.httpMethod][event.path]){
-        route = this.cache[event.httpMethod][event.path].route;
-        params = this.cache[event.httpMethod][event.path].params;
+        resolved = this.cache[event.httpMethod][event.path];
       }else{
-        let i;
-        for(i = 0; i < this.routes[event.httpMethod].length; i++){
-          route = this.routes[event.httpMethod][i];
-          params = route.filter(event.path);
-          if(!!params){
-            this.cache[event.httpMethod][event.path] = {
-              route : route,
-              params : params
-            };
-            break;
-          };
-        }
+        const pathParts = event.path.split("/").filter(p => p !== "");
+        resolved = resolve(pathParts, this.routes[event.httpMethod], {});
+      }
+
+      if(resolved){
+        resolved.cb(event, context, resolved.params);
+      }else{
+        throw { statusCode : 404, message : "Not Found"};
       }
     }else{
       throw { statusCode : 405, message : "method not allowed" };
-    }
-    
-    if(!!params){
-      route.cb(event, context, params);
-    }else{
-      throw { statusCode : 404, message : "Not Found"};
     }
   }catch(err){
     context.fail(err);
   }
 }
 
-function on(method, path, cb){
-  this.routes[method].push({
-    filter : path2ReqFilter(path),
-    cb : cb
-  });  
-}
-
-function path2ReqFilter(path){
-  const parts = path.split("/").filter(p => p !== "");
-  const paramList = [];
-  let pattern = "^";
-  let i, part, match;
-  for(i = 0; i < parts.length; i++){
-    part = parts[i];
-    match = part.match(/^:(.+)$/);
-    if(match){
-      paramList.push(match[1]);
-      pattern += "/(.+)";
-    }else{
-      pattern += `/${part}`;
+function resolve(pathParts, route, params){
+  if(pathParts.length === 0){
+    return { 
+      cb : route._,
+      params : params
     }
   }
-  pattern += "$";
-  
-  const reqFilter = function(pattern, paramList, reqPath){
-    const matched = reqPath.match(new RegExp(pattern));
-    if(!matched) return;
-    const params = {};
-    let paramName, i;
-    for(i = 0; i < paramList.length; i++){
-      paramName = paramList[i];
-      params[paramName] = matched[i+1];
-    }
-    return params;
-  }.bind(null, pattern, paramList);
 
-  return reqFilter;
+  let part = pathParts.splice(0, 1)[0];
+  if(route[part]){
+    return resolve(pathParts, route[part], params);
+  }else if(route.__param__){
+    params[route.__param__.name] = part;
+    return resolve(pathParts, route.__param__.__, params);
+  }else{
+    return; //Not Found
+  };
+}
+
+function use(path, router){
+  let pathParts;
+  Object.keys(router.routes).forEach((method) => {
+    pathParts = path.split("/").filter(p => p !== "");
+    this.routes[method] = _on(pathParts, this.routes[method], router.routes[method], true);
+  });
+}
+
+function on(method, path, cb){
+  const pathParts = path.split("/").filter(p => p !== "");
+  this.routes[method] = _on(pathParts, this.routes[method], cb);
+}
+
+function _on(pathParts, route, cb, isCbRouter){
+  if(pathParts.length === 0){
+    if(isCbRouter) route = Object.assign(route, cb);
+    else route._ = cb;
+  }else{
+    let part = pathParts.splice(0, 1)[0];
+    let match = part.match(/^:(.+)$/);
+    
+    if (match) {
+      let paramName = match[1];
+      route.__param__ = {
+        name : paramName,
+        __ : _on(pathParts, {}, cb, isCbRouter)
+      };
+    }else{
+      route[part] = _on(pathParts, (route[part] || {}), cb, isCbRouter)
+    }
+  }
+  return route;
 }
 
 exports.createRouter = createRouter;

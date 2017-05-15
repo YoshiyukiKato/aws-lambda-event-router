@@ -5,7 +5,6 @@ const Router = require("../index");
 describe("router", () => {
   it("creates new router", () => {
     const router = Router.createRouter();
-
     assert(router);
   });
 
@@ -86,14 +85,14 @@ describe("router", () => {
     router(eventPOST, context);
   });
 
-  it("uses path parameters", () => {
+  it("uses path parameter", () => {
     const router = Router.createRouter();
     const eventGET = {
       httpMethod : "GET",
       path : "/hello/taro"
     };
     const eventPOST = {
-      httpMethod : "GET",
+      httpMethod : "POST",
       path : "/hello/taro"
     };
     
@@ -117,4 +116,74 @@ describe("router", () => {
     router(eventGET, context);
     router(eventPOST, context);
   });
+
+  it("uses multiple path parameters", () => {
+    const router = Router.createRouter();
+    const eventGET = {
+      httpMethod : "GET",
+      path : "/hello/taro"
+    };
+    const eventPOST = {
+      httpMethod : "POST",
+      path : "/hello/taro"
+    };
+    
+    const context = {
+      succeed : function(message){
+        assert(message === "hello taro");
+      },
+      
+      fail : function(err){
+        throw err;
+      }
+    };
+
+    router.get("/:greet/:name", (event, context, params) => {
+      context.succeed(`${params.greet} ${params.name}`);
+    });
+    router.post("/:greet/:name", (event, context, params) => {
+      context.succeed(`${params.greet} ${params.name}`);
+    });
+
+    router(eventGET, context);
+    router(eventPOST, context);
+  });
+
+  it("imports a sub router", () => {
+    const router = Router.createRouter();
+    const subRouter = Router.createRouter();
+    
+    const eventGET = {
+      httpMethod : "GET",
+      path : "/sub/hello"
+    };
+
+    const eventPOST = {
+      httpMethod : "POST",
+      path : "/sub/hello"
+    };
+    
+    const context = {
+      succeed : function(message){
+        assert(message === "hello");
+      },
+      
+      fail : function(err){
+        throw err;
+      }
+    };
+
+    subRouter.get("/hello", (event, context, params) => {
+      context.succeed("hello");
+    });
+    
+    subRouter.post("/hello", (event, context, params) => {
+      context.succeed("hello");
+    });
+
+    router.use("/sub", subRouter);
+    router(eventGET, context);
+    router(eventPOST, context);
+  });
+
 });
