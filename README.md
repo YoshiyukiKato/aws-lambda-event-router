@@ -42,19 +42,48 @@ exports.handler = router;
 
 Then a response will be `welcome`.
 
-### get/post
-Now this library supports `GET` and `POST` as `httpMethod`. To set a callback for a request, `router.get` and `router.post` are provided.
+### http methods
+Now this library supports following methods.
+
+- GET
+- POST
+- PUT
+- DELETE
+- HEAD
+- PATCH
+- OPTIONS
+
+ To set a callback for a request, `router.get`, `router.post`, `router.put`, `router.delete`, `router.head`, `router.patch`, and `router.options` are provided.
 
 ```js
 router.get("/", (event, context, params) => {
-  context.succeed("welcome");
+  context.succeed("get");
 });
 
 router.post("/", (event, context, params) => {
-  context.succeed("welcome");
+  context.succeed("post");
+});
+
+router.put("/", (event, context, params) => {
+  context.succeed("put");
+});
+
+router.delete("/", (event, context, params) => {
+  context.succeed("delete");
+});
+
+router.head("/", (event, context, params) => {
+  context.succeed("head");
+});
+
+router.patch("/", (event, context, params) => {
+  context.succeed("patch");
+});
+
+router.options("/", (event, context, params) => {
+  context.succeed("options");
 });
 ```
-
 
 ### params
 `/path/:param_name` style parameter is supported. You can access a parameter by `req.params[param_name]`. For instance:

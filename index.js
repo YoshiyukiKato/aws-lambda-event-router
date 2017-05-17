@@ -5,6 +5,11 @@ function createRouter(){
   const r = router.bind(rs);
   r.get = on.bind(rs, "GET");
   r.post = on.bind(rs, "POST");
+  r.put = on.bind(rs, "PUT");
+  r.delete = on.bind(rs, "DELETE");
+  r.head = on.bind(rs, "HEAD");
+  r.patch = on.bind(rs, "PATCH");
+  r.options = on.bind(rs, "OPTIONS");
   r.use = use.bind(rs);
   r.routes = rs.routes;
   return r;
@@ -13,12 +18,22 @@ function createRouter(){
 function RouterState(){
   this.routes = {
     GET : {},
-    POST : {}
+    POST : {},
+    PUT : {},
+    DELETE : {},
+    HEAD : {},
+    PATCH : {},
+    OPTIONS : {}
   };
 
   this.cache = {
     GET : {},
-    POST : {}
+    POST : {},
+    PUT : {},
+    DELETE : {},
+    HEAD : {},
+    PATCH : {},
+    OPTIONS : {}
   };
 }
 
